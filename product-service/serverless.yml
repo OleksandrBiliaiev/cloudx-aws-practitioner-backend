@@ -1,0 +1,71 @@
+service: product-service
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+frameworkVersion: '3'
+
+# Add the serverless-webpack plugin
+plugins:
+  - serverless-openapi-documentation
+  - serverless-webpack
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  stage: dev
+
+functions:
+  products:
+    handler: getProductsList.getProductsList
+    events:
+      - http:
+          path: /products
+          method: get
+          cors:
+            origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
+            headers: "*" # <-- Specify allowed headers
+          documentation:
+            summary: "Get all product"
+            description: "Returns a array of all products"
+            requestBody:
+              description: ""
+            requestModels:
+              application/json: "application/json"
+            methodResponses:
+              - statusCode: 200
+                responseBody:
+                  description: "Success"
+                responseModels:
+                  application/json: "application/json"
+  productsId:
+    handler: getProductsById.getProductsById
+    events:
+      - http:
+          path: /products/{productId}
+          method: get
+          request: 
+            parameters: 
+              paths: 
+                productId: true
+          cors:
+            origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
+            headers: "*"
+          documentation:
+            summary: "Get product by id"
+            description: "Returns specific product, if Id found."
+            requestBody:
+              description: ""
+            requestModels:
+              application/json: "application/json"
+            methodResponses:
+              - statusCode: 200
+                responseBody:
+                  description: "Success"
+                responseModels:
+                  application/json: "application/json"
+custom:
+  documentation:
+    version: '1'
+    title: 'Product API'
+    description: 'This is Product API'
+    models: []
