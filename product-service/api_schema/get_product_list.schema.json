@@ -1,0 +1,23 @@
+{
+  "definitions": {},
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "title": "Get Product Lost Schema",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "price": {
+      "type": "number"
+    },
+    "count": {
+      "type": "number"
+    },
+    "description": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    }
+  }
+}
