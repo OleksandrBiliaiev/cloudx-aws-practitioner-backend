@@ -1,0 +1,27 @@
+openapi: 3.0.0
+components:
+  schemas: {}
+  securitySchemes: {}
+info:
+  title: Product API
+  description: This is Product API
+  version: '1'
+paths:
+  //products:
+    get:
+      operationId: products
+      summary: Get all product
+      description: Returns a array of all products
+      responses:
+        '200':
+          description: Success
+          content: {}
+  '//products/{productId}':
+    get:
+      operationId: productsId
+      summary: Get product by id
+      description: 'Returns specific product, if Id found.'
+      responses:
+        '200':
+          description: Success
+          content: {}
