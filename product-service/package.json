@@ -5,17 +5,21 @@
   "scripts": {
     "test": "jest",
     "deploy": "sls deploy",
-    "gen:doc": "sls openapi generate"
+    "gen:doc": "sls openapi generate",
+    "aws:batchWrite:Products": "aws dynamodb batch-write-item --request-items file://scripts/Cloudx_Products.json",
+    "aws:batchWrite:Stocks": "aws dynamodb batch-write-item --request-items file://scripts/Cloudx_Stocks.json"
   },
   "devDependencies": {
     "@babel/core": "^7.11.1",
     "@babel/preset-env": "^7.20.2",
+    "aws-sdk": "^2.1327.0",
     "babel-jest": "^29.4.3",
     "babel-loader": "^8.1.0",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-polyfill": "^6.23.0",
     "babel-preset-env": "^1.6.0",
     "jest": "^29.4.3",
+    "serverless-event-body-option": "^1.2.0",
     "serverless-openapi-documentation": "^0.4.0",
     "serverless-webpack": "^5.3.1",
     "ts-jest": "^29.0.5",

@@ -1,0 +1,84 @@
+{
+  "CloudX_Products": [
+    {
+      "PutRequest": {
+        "Item": {
+          "description": { "S": "Scott Bike Product Description" },
+          "id": { "S": "7567ec4b-b10c-48c5-9345-fc73c48a80aa" },
+          "price": { "N": "25"},
+          "title": { "S": "Scott" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "description": { "S": "Specialized Bike Product Description" },
+          "id": { "S": "7567ec4b-b10c-48c5-9345-fc73c48a80a0" },
+          "price": { "N": "26"},
+          "title": { "S": "Specialized" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "description": { "S": "Orbea Bike Product Description" },
+          "id": { "S": "7567ec4b-b10c-48c5-9345-fc73c48a80a2" },
+          "price": { "N": "24"},
+          "title": { "S": "Orbea" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "description": { "S": "Cannondale Bike Product Description" },
+          "id": { "S": "7567ec4b-b10c-48c5-9345-fc73c48a80a1" },
+          "price": { "N": "24"},
+          "title": { "S": "Cannondale" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "description": { "S": "Santa Cruz Bike Product Description" },
+          "id": { "S": "7567ec4b-b10c-48c5-9345-fc73c48a80a3" },
+          "price": { "N": "25"},
+          "title": { "S": "Santa Cruz" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "description": { "S": "BMC Bike Product Description" },
+          "id": { "S": "7567ec4b-b10c-48c5-9345-fc73348a80a1" },
+          "price": { "N": "26"},
+          "title": { "S": "BMC" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "description": { "S": "Trek Bike Product Description" },
+          "id": { "S": "7567ec4b-b10c-48c5-9445-fc73c48a80a2" },
+          "price": { "N": "24"},
+          "title": { "S": "Trek" }
+        }
+      }
+    },
+    {
+      "PutRequest": {
+        "Item": {
+          "description": { "S": "Canyon Bike Product Description" },
+          "id": { "S": "7567ec4b-b10c-45c5-9345-fc73c48a80a1" },
+          "price": { "N": "24"},
+          "title": { "S": "Canyon" }
+        }
+      }
+    }
+  ]
+}

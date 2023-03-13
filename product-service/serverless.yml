@@ -7,12 +7,16 @@ frameworkVersion: "3"
 # Add the serverless-webpack plugin
 plugins:
   - serverless-openapi-documentation
+  # - serverless-event-body-option
   - serverless-webpack
 
 provider:
   name: aws
   runtime: nodejs12.x
   stage: dev
+  iam:
+    role: arn:aws:iam::043770472754:role/DynamoDBLamdaFullAccessRole
+
 
 functions:
   products:
@@ -57,6 +61,28 @@ functions:
           documentation:
             summary: "Get product by id"
             description: "Returns specific product, if Id found."
+            requestBody:
+              description: ""
+            requestModels:
+              application/json: "application/json"
+            methodResponses:
+              - statusCode: 200
+                responseBody:
+                  description: "Success"
+                responseModels:
+                  application/json: "application/json"
+  putProduct:
+    handler: putProduct.putProduct
+    events:
+      - http:
+          path: /product
+          method: put
+          cors:
+            origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
+            headers: "*"
+          documentation:
+            summary: "Put product."
+            description: "Put product item into the DB."
             requestBody:
               description: ""
             requestModels:
