@@ -1,0 +1,44 @@
+service: import-service
+frameworkVersion: "3"
+
+plugins:
+  - serverless-webpack
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  iam:
+    role:
+      statements:
+        # Allow functions to list all buckets
+        - Effect: Allow
+          Action: "s3:ListBucket"
+          Resource: "arn:aws:s3:::aws-cloudx-bike-shop-product-import"
+        # Allow functions to read/write objects in a bucket
+        - Effect: Allow
+          Action:
+            - "s3:*"
+          Resource:
+            - "arn:aws:s3:::aws-cloudx-bike-shop-product-import/*"
+
+functions:
+  upload:
+    handler: importProductsFile.importProductsFile
+    events:
+      - http:
+          path: /import
+          method: get
+          # cors: true
+          cors:
+            origin: "https://dqbw3kxelkxvj.cloudfront.net"
+            headers: "*"
+  parse:
+    handler: importFileParser.importFileParser
+    events:
+      - s3:
+          bucket: aws-cloudx-bike-shop-product-import
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: uploaded/
+          existing: true

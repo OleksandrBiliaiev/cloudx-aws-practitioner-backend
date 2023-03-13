@@ -7,7 +7,6 @@ frameworkVersion: "3"
 # Add the serverless-webpack plugin
 plugins:
   - serverless-openapi-documentation
-  # - serverless-event-body-option
   - serverless-webpack
 
 provider:
@@ -17,7 +16,6 @@ provider:
   iam:
     role: arn:aws:iam::043770472754:role/DynamoDBLamdaFullAccessRole
 
-
 functions:
   products:
     handler: getProductsList.getProductsList
@@ -25,13 +23,15 @@ functions:
       - http:
           path: /products
           method: get
+          # cors: true
           cors:
             origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
             headers: "*" # <-- Specify allowed headers
-          request:
-            schemas:
-              application/json:
-                schema: ${file(api_schema/get_product_list.schema.json)}
+          # request:
+          #   schemas:
+          #     application/json:
+          #       schema: ${file(api_schema/get_product_list.schema.json)}
+          # above commented code might lead to a failing response
           documentation:
             summary: "Get all product"
             description: "Returns a array of all products"
@@ -55,6 +55,7 @@ functions:
             parameters:
               paths:
                 productId: true
+          # cors: true
           cors:
             origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
             headers: "*"
@@ -77,6 +78,7 @@ functions:
       - http:
           path: /product
           method: put
+          # cors: true
           cors:
             origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
             headers: "*"
