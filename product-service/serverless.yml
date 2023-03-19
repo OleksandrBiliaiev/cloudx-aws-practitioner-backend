@@ -8,13 +8,37 @@ frameworkVersion: "3"
 plugins:
   - serverless-openapi-documentation
   - serverless-webpack
+  - serverless-lift
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs18.x
   stage: dev
   iam:
     role: arn:aws:iam::043770472754:role/DynamoDBLamdaFullAccessRole
+  iamRoleStatements:
+  - Effect: "Allow"
+    Action:
+      - sqs:SendMessage
+      - sqs:ReceiveMessage
+      - sqs:DeleteMessage
+      - sqs:GetQueueAttributes
+    Resource: "${construct:catalogItemsQueue.queueUrl}"
+  - Effect: "Allow"
+    Action:
+      - sqs:ListQueues
+    Resource: "${construct:catalogItemsQueue.queueUrl}"
+
+constructs:
+  catalogItemsQueue:
+    type: queue
+    worker:
+      handler: catalogBatchProcess.catalogBatchProcess
+      # events:
+      #   - sqs:
+      #       arn: !GetAtt catalogItemsQueue.Arn
+            # arn: !GetAtt  catalogItemsQueue.Arn
+      batchSize: 5
 
 functions:
   products:
@@ -95,9 +119,44 @@ functions:
                   description: "Success"
                 responseModels:
                   application/json: "application/json"
+  # catalogBatchProcess:
+  #   handler: catalogBatchProcess.catalogBatchProcess
+  #   events:
+  #     - sqs:
+  #         arn: !GetAtt  catalogItemsQueue.Arn
+  #         # arn: !GetAtt  catalogItemsQueue.Arn
+  #         batchSize: 5
 custom:
   documentation:
     version: "1"
     title: "Product API"
     description: "This is Product API"
     models: []
+# resources:
+#   - ${file(./sls/resources.yml)}
+Resources:
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: lambda-execution-role
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: sqs-permissions-policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sqs:ReceiveMessage
+                Resource: arn:aws:sqs:us-east-1:043770472754:${construct:catalogItemsQueue.queueUrl}
+                Condition:
+                  ArnEquals:
+                    "aws:SourceArn": "arn:aws:sqs:us-east-1:043770472754:${construct:catalogItemsQueue.queueUrl}"
+

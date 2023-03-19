@@ -3,6 +3,7 @@ frameworkVersion: "3"
 
 plugins:
   - serverless-webpack
+  - serverless-lift
 
 provider:
   name: aws
@@ -21,6 +22,10 @@ provider:
             - "s3:*"
           Resource:
             - "arn:aws:s3:::aws-cloudx-bike-shop-product-import/*"
+
+# constructs:
+#     catalogItemsQueue:
+#         type: queue
 
 functions:
   upload:
@@ -42,3 +47,5 @@ functions:
           rules:
             - prefix: uploaded/
           existing: true
+    environment:
+            QUEUE_URL: ${construct:catalogItemsQueue.queueUrl}

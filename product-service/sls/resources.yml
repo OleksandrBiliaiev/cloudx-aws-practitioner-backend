@@ -1,0 +1,70 @@
+Resources:
+  catalogItemsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      # QueueName: catalogItemsQueue
+      RedrivePolicy:
+        deadLetterTargetArn: !GetAtt catalogItemsQueueDL.Arn
+        maxReceiveCount: 5
+
+  catalogItemsQueueDL:
+    Type: AWS::SQS::Queue
+    Properties:
+      # QueueName: catalogItemsQueueDL
+      MessageRetentionPeriod: 86400
+    
+  iamLambdaRoleExecution:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: catalogItemsQueue-lambda-role-execution
+      Description: 'Lambda execution role for catalogItemsQueue'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: 
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: Logging_Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - 'arn:aws:logs:*:*:*'
+        - PolicyName: SQS_Policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sqs:*"
+                Resource:
+                  - !GetAtt catalogItemsQueue.Arn
+                  - !GetAtt catalogItemsQueueDL.Arn
+  
+  catalogBatchProcessLambdaPermission:
+      Type: "AWS::Lambda::Permission"
+      Properties:
+        FunctionName: product-service-dev-catalogBatchProcess
+        Action: "lambda:InvokeFunction"
+        Principal: "sqs.amazonaws.com"
+        SourceArn: !GetAtt catalogItemsQueue.Arn
+  
+  catalogItemsQueueEventSourceMapping:
+    Type: "AWS::Lambda::EventSourceMapping"
+    Properties:
+      BatchSize: 5
+      Enabled: true
+      EventSourceArn: !GetAtt catalogItemsQueue.Arn
+      FunctionName: product-service-dev-catalogBatchProcess
+ 
