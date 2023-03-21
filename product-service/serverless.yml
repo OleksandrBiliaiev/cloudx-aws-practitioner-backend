@@ -1,14 +1,9 @@
 service: product-service
-# app and org for use with dashboard.serverless.com
-#app: your-app-name
-#org: your-org-name
 frameworkVersion: "3"
 
-# Add the serverless-webpack plugin
 plugins:
   - serverless-openapi-documentation
   - serverless-webpack
-  - serverless-lift
 
 provider:
   name: aws
@@ -16,29 +11,6 @@ provider:
   stage: dev
   iam:
     role: arn:aws:iam::043770472754:role/DynamoDBLamdaFullAccessRole
-  iamRoleStatements:
-  - Effect: "Allow"
-    Action:
-      - sqs:SendMessage
-      - sqs:ReceiveMessage
-      - sqs:DeleteMessage
-      - sqs:GetQueueAttributes
-    Resource: "${construct:catalogItemsQueue.queueUrl}"
-  - Effect: "Allow"
-    Action:
-      - sqs:ListQueues
-    Resource: "${construct:catalogItemsQueue.queueUrl}"
-
-constructs:
-  catalogItemsQueue:
-    type: queue
-    worker:
-      handler: catalogBatchProcess.catalogBatchProcess
-      # events:
-      #   - sqs:
-      #       arn: !GetAtt catalogItemsQueue.Arn
-            # arn: !GetAtt  catalogItemsQueue.Arn
-      batchSize: 5
 
 functions:
   products:
@@ -47,10 +19,9 @@ functions:
       - http:
           path: /products
           method: get
-          # cors: true
           cors:
-            origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
-            headers: "*" # <-- Specify allowed headers
+            origin: "https://dqbw3kxelkxvj.cloudfront.net" 
+            headers: "*" 
           # request:
           #   schemas:
           #     application/json:
@@ -79,9 +50,8 @@ functions:
             parameters:
               paths:
                 productId: true
-          # cors: true
           cors:
-            origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
+            origin: "https://dqbw3kxelkxvj.cloudfront.net" 
             headers: "*"
           documentation:
             summary: "Get product by id"
@@ -102,9 +72,8 @@ functions:
       - http:
           path: /product
           method: put
-          # cors: true
           cors:
-            origin: "https://dqbw3kxelkxvj.cloudfront.net" # <-- Specify allowed origin
+            origin: "https://dqbw3kxelkxvj.cloudfront.net" 
             headers: "*"
           documentation:
             summary: "Put product."
@@ -119,44 +88,22 @@ functions:
                   description: "Success"
                 responseModels:
                   application/json: "application/json"
-  # catalogBatchProcess:
-  #   handler: catalogBatchProcess.catalogBatchProcess
-  #   events:
-  #     - sqs:
-  #         arn: !GetAtt  catalogItemsQueue.Arn
-  #         # arn: !GetAtt  catalogItemsQueue.Arn
-  #         batchSize: 5
+  catalogBatchProcess:
+    role: iamLambdaRoleExecution
+    handler: catalogBatchProcess.catalogBatchProcess
+    events:
+      - sqs:
+          arn: "arn:aws:sqs:us-east-1:043770472754:catalogItemsQueue"
+          batchSize: 5
+
 custom:
   documentation:
     version: "1"
     title: "Product API"
     description: "This is Product API"
     models: []
-# resources:
-#   - ${file(./sls/resources.yml)}
-Resources:
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      RoleName: lambda-execution-role
-      AssumeRolePolicyDocument:
-        Version: "2012-10-17"
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service: lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-      Policies:
-        - PolicyName: sqs-permissions-policy
-          PolicyDocument:
-            Version: "2012-10-17"
-            Statement:
-              - Effect: Allow
-                Action:
-                  - sqs:ReceiveMessage
-                Resource: arn:aws:sqs:us-east-1:043770472754:${construct:catalogItemsQueue.queueUrl}
-                Condition:
-                  ArnEquals:
-                    "aws:SourceArn": "arn:aws:sqs:us-east-1:043770472754:${construct:catalogItemsQueue.queueUrl}"
+
+resources:
+  - ${file(./sls/resources.yml)}
+
 

@@ -23,7 +23,6 @@
   "author": "The serverless webpack authors (https://github.com/elastic-coders/serverless-webpack)",
   "license": "MIT",
   "dependencies": {
-    "csv-parser": "^3.0.0",
-    "serverless-lift": "^1.25.1"
+    "csv-parser": "^3.0.0"
   }
 }

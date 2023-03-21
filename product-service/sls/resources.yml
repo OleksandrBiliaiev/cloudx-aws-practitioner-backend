@@ -1,8 +1,11 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: "AWS::Serverless-2016-10-31"
+
 Resources:
   catalogItemsQueue:
     Type: AWS::SQS::Queue
     Properties:
-      # QueueName: catalogItemsQueue
+      QueueName: catalogItemsQueue
       RedrivePolicy:
         deadLetterTargetArn: !GetAtt catalogItemsQueueDL.Arn
         maxReceiveCount: 5
@@ -10,40 +13,71 @@ Resources:
   catalogItemsQueueDL:
     Type: AWS::SQS::Queue
     Properties:
-      # QueueName: catalogItemsQueueDL
+      QueueName: catalogItemsQueueDL
       MessageRetentionPeriod: 86400
-    
+
+  createProductTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: createProductTopic
+
+  # createProductTopicSubscription:
+  #   Type: AWS::SNS::Subscription
+  #   Properties:
+  #     Protocol: email
+  #     TopicArn:
+  #       Ref: createProductTopic
+  #     Endpoint: your-email@example.com
+
   iamLambdaRoleExecution:
     Type: AWS::IAM::Role
     Properties:
       RoleName: catalogItemsQueue-lambda-role-execution
-      Description: 'Lambda execution role for catalogItemsQueue'
+      Description: "Lambda execution role for catalogItemsQueue"
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/AWSXrayWriteOnlyAccess
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole
+        - arn:aws:iam::aws:policy/AmazonSQSFullAccess
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
               Service:
                 - lambda.amazonaws.com
-            Action: 
+            Action:
               - sts:AssumeRole
       Policies:
         - PolicyName: Logging_Policy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
-                Action: 
+                Action:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource:
-                  - 'arn:aws:logs:*:*:*'
+                  - "arn:aws:logs:*:*:*"
+        - PolicyName: DynamoDB_Policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "dynamodb:*"
+                Resource: "*"
+        - PolicyName: SNS_Policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sns:*"
+                Resource: "*"
         - PolicyName: SQS_Policy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -51,20 +85,3 @@ Resources:
                 Resource:
                   - !GetAtt catalogItemsQueue.Arn
                   - !GetAtt catalogItemsQueueDL.Arn
-  
-  catalogBatchProcessLambdaPermission:
-      Type: "AWS::Lambda::Permission"
-      Properties:
-        FunctionName: product-service-dev-catalogBatchProcess
-        Action: "lambda:InvokeFunction"
-        Principal: "sqs.amazonaws.com"
-        SourceArn: !GetAtt catalogItemsQueue.Arn
-  
-  catalogItemsQueueEventSourceMapping:
-    Type: "AWS::Lambda::EventSourceMapping"
-    Properties:
-      BatchSize: 5
-      Enabled: true
-      EventSourceArn: !GetAtt catalogItemsQueue.Arn
-      FunctionName: product-service-dev-catalogBatchProcess
- 

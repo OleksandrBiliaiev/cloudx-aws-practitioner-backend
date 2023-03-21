@@ -1,45 +1,50 @@
-// import { productMock } from './mockData/productMock'
 import AWS from 'aws-sdk'
 
-export const catalogBatchProcess = async (event) => {
-  // Logging
-  console.log('catalogBatchProcess called!');
-  console.log('event:', event);
-  console.log('event Records:', event.Records);
+export const catalogBatchProcess = async ({ Records }) => {
+  const dynamo = new AWS.DynamoDB.DocumentClient();
+  const sns = new AWS.SNS();
 
-  // const dynamo = new AWS.DynamoDB.DocumentClient();
+  const putProductTable = async ({ id, description, price, title }) => {
+    const putResult = await dynamo.put({
+      TableName: (process.env.PRODUCTS_TABLE_NAME || 'CloudX_Products'),
+      Item: { id, description, price, title }
+    }).promise();
+    return putResult;
+  }
 
-  // const putProductTable = async (product) => {
-  //   const putResult= await dynamo.put({
-  //     TableName: process.env.PRODUCTS_TABLE_NAME,
-  //     Item: product
-  //   }).promise();
-  //   return putResult;
-  // }
-
-  // const putStockTable = async (product) => {
-  //   const putResult= await dynamo.put({
-  //     TableName: process.env.STOCKS_TABLE_NAME,
-  //     Item: {'product_id': product.id, 'count': product.count}
-  //   }).promise();
-  //   return putResult;
-  // }
+  const putStockTable = async ({id, count}) => {
+    const putResult = await dynamo.put({
+      TableName: (process.env.STOCKS_TABLE_NAME || 'CloudX_Stocks'),
+      Item: { 'product_id': id, count }
+    }).promise();
+    return putResult;
+  }
 
   try {
-    // const product = JSON.parse(event.body);
-    // const putTransactionResult = await dynamo.transactWrite(putProductTable(product), putStockTable(product));
+    const asyncRes = await Promise.all(Records.map(async ({ body }) => {
+      const product = JSON.parse(body);
+      product.count = +product.count;
+      product.price = +product.price;
+      const result = await dynamo.transactWrite(putProductTable(product), putStockTable(product));
+    }));
 
-    const response = {
-      statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      // body: JSON.stringify(await putProductTable(product), await putStockTable(product)),
-      body: JSON.stringify(putTransactionResult),
+    const message = {
+      message: 'Product(s) successfully created',
+      result: asyncRes
+    }
+
+    const params = {
+      Message: JSON.stringify(message),
+      TopicArn: 'arn:aws:sns:us-east-1:043770472754:createProductTopic'
     };
 
-    return response
+    await sns.publish(params).promise();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Products created successfully.' })
+    };
+
   } catch (error) {
     console.error(error);
 
@@ -50,8 +55,8 @@ export const catalogBatchProcess = async (event) => {
         'Access-Control-Allow-Credentials': true,
       },
       body: JSON.stringify(error),
-  }
-  return response;
+    }
+    return response;
   }
 
 };

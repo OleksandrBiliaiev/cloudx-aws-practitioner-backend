@@ -20,9 +20,13 @@ export const importFileParser = async (event) => {
       await new Promise((resolve) => {
         s3Stream
           .pipe(csv())
-          .on('data', (data) => {
-            // console.log('CSV record:', data);
-            csvRecords.push(data);
+          .on('data', async (data) => {
+            await sqs
+              .sendMessage({
+                QueueUrl: 'https://sqs.us-east-1.amazonaws.com/043770472754/catalogItemsQueue',
+                MessageBody: JSON.stringify(data),
+              })
+              .promise();
           })
           .on('end', async () => {
             await s3.copyObject({
@@ -36,20 +40,6 @@ export const importFileParser = async (event) => {
               Key: objectKey
             }).promise();
 
-            csvRecords.map(record => {
-              console.log('csvRecords, record => ', record)
-              sqs.sendMessage({
-                QueueUrl: process.env.QUEUE_URL,
-                // QueueUrl: 'https://sqs.us-east-1.amazonaws.com/043770472754/catalogItemsQueue',
-                MessageBody: JSON.stringify(record),
-              }, (error, data) => {
-                if (error) {
-                  logger.log(`Error for send to SQS: ${error}`);
-                } else {
-                  logger.log(`Message was sent to SQS: ${data}`);
-                }
-              })
-            })
 
             resolve({
               statusCode: 200,
