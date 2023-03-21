@@ -46,7 +46,9 @@ export const getProductsList = async (event) => {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
         'Access-Control-Allow-Credentials': true,
+        'Content-Type': 'application/json'
       },
       // body: JSON.stringify(productMock), //task-2
       body: JSON.stringify(await getFormattedProductDat()),
@@ -59,7 +61,9 @@ export const getProductsList = async (event) => {
       statusCode: 500,
       headers: {
         'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': '*',
         'Access-Control-Allow-Credentials': true,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(error),
     };
