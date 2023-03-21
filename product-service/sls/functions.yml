@@ -1,0 +1,6 @@
+  catalogBatchProcess:
+    handler: catalogBatchProcess.catalogBatchProcess
+    events:
+      - sqs:
+        arn: !GetAtt  catalogItemsQueue.Arn
+        batchSize: 5

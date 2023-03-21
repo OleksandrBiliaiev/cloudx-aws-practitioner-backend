@@ -21,6 +21,18 @@ provider:
             - "s3:*"
           Resource:
             - "arn:aws:s3:::aws-cloudx-bike-shop-product-import/*"
+iamRoleStatements:
+  - Effect: "Allow"
+    Action:
+      - sqs:SendMessage
+      - sqs:ReceiveMessage
+      - sqs:DeleteMessage
+      - sqs:GetQueueAttributes
+    Resource: "*"
+  - Effect: "Allow"
+    Action:
+      - sqs:ListQueues
+    Resource: "*"  
 
 functions:
   upload:
@@ -29,7 +41,6 @@ functions:
       - http:
           path: /import
           method: get
-          # cors: true
           cors:
             origin: "https://dqbw3kxelkxvj.cloudfront.net"
             headers: "*"

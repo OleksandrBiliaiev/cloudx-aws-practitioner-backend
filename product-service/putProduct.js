@@ -1,8 +1,6 @@
-// import { productMock } from './mockData/productMock'
 import AWS from 'aws-sdk'
 
 export const putProduct = async (event) => {
-  // Logging
   console.log('putProduct called!');
   console.log('event:', event);
 
@@ -10,7 +8,7 @@ export const putProduct = async (event) => {
 
   const putProductTable = async (product) => {
     const putResult= await dynamo.put({
-      TableName: process.env.PRODUCTS_TABLE_NAME,
+      TableName: (process.env.PRODUCTS_TABLE_NAME || 'CloudX_Products'),
       Item: product
     }).promise();
     return putResult;
@@ -18,13 +16,14 @@ export const putProduct = async (event) => {
 
   const putStockTable = async (product) => {
     const putResult= await dynamo.put({
-      TableName: process.env.STOCKS_TABLE_NAME,
+      TableName: (process.env.STOCKS_TABLE_NAME || 'CloudX_Stocks'),
       Item: {'product_id': product.id, 'count': product.count}
     }).promise();
     return putResult;
   }
 
   try {
+    // const product = JSON.parse('{"count":3,"description":"Some other bike","id":"dasda!231","price":22,"title":"supertitle"}');
     const product = JSON.parse(event.body);
     const putTransactionResult = await dynamo.transactWrite(putProductTable(product), putStockTable(product));
 
@@ -34,7 +33,6 @@ export const putProduct = async (event) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
-      // body: JSON.stringify(await putProductTable(product), await putStockTable(product)),
       body: JSON.stringify(putTransactionResult),
     };
 
