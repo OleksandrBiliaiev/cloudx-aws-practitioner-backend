@@ -1,0 +1,24 @@
+service: authorization-service
+frameworkVersion: "3"
+useDotenv: true
+
+plugins:
+  - serverless-webpack
+  - serverless-dotenv-plugin
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: dev
+  environment:
+    TEST_USER_NAME: ${env:TEST_USER_NAME}
+  
+
+functions:
+  basicAuthorizer:
+    handler: basicAuthorizer.basicAuthorizer
+    events:
+      - http:
+          path: ''
+          method: get
+          cors: true

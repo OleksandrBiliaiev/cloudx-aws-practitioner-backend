@@ -21,6 +21,18 @@ provider:
             - "s3:*"
           Resource:
             - "arn:aws:s3:::aws-cloudx-bike-shop-product-import/*"
+iamRoleStatements:
+  - Effect: "Allow"
+    Action:
+      - sqs:SendMessage
+      - sqs:ReceiveMessage
+      - sqs:DeleteMessage
+      - sqs:GetQueueAttributes
+    Resource: "*"
+  - Effect: "Allow"
+    Action:
+      - sqs:ListQueues
+    Resource: "*"  
 
 functions:
   upload:
@@ -29,10 +41,18 @@ functions:
       - http:
           path: /import
           method: get
-          # cors: true
-          cors:
-            origin: "https://dqbw3kxelkxvj.cloudfront.net"
-            headers: "*"
+          cors: true
+            # origin: "https://dqbw3kxelkxvj.cloudfront.net"
+            # headers: "*"
+          authorizer: 
+            # name: 'basicAuthorizer'
+            arn: arn:aws:lambda:us-east-1:043770472754:function:authorization-service-dev-basicAuthorizer
+            type: token 
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            # identityValidationExpression: Basic *
+            # identitySource: method.request.header.authorizationToken
+            # identityValidationExpression: '^Bearer [-0-9a-zA-Z._]*$'
   parse:
     handler: importFileParser.importFileParser
     events:
@@ -42,3 +62,15 @@ functions:
           rules:
             - prefix: uploaded/
           existing: true
+
+resources:
+  Resources:
+    Unauthorized:
+      Type: AWS::ApiGateway::GatewayResponse
+      Properties:
+        ResponseParameters:
+          "gatewayresponse.header.Access-Control-Allow-Origin": "'*'"
+          "gatewayresponse.header.Access-Control-Allow-Headers": "'*'"
+        ResponseType: "DEFAULT_4XX"
+        RestApiId:
+          Ref: "ApiGatewayRestApi"        
