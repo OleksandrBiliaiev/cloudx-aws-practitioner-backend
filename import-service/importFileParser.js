@@ -4,6 +4,10 @@ import csv from 'csv-parser';
 export const importFileParser = async (event) => {
   const BUCKET = 'aws-cloudx-bike-shop-product-import';
   const s3 = new AWS.S3({ region: 'us-east-1' });
+  // Create an SQS service object
+  var sqs = new AWS.SQS({ apiVersion: '2012-11-05' });
+
+  const csvRecords = [];
 
   try {
     for (const record of event.Records) {
@@ -16,8 +20,13 @@ export const importFileParser = async (event) => {
       await new Promise((resolve) => {
         s3Stream
           .pipe(csv())
-          .on('data', (data) => {
-            console.log('CSV record:', data);
+          .on('data', async (data) => {
+            await sqs
+              .sendMessage({
+                QueueUrl: 'https://sqs.us-east-1.amazonaws.com/043770472754/catalogItemsQueue',
+                MessageBody: JSON.stringify(data),
+              })
+              .promise();
           })
           .on('end', async () => {
             await s3.copyObject({
@@ -30,6 +39,7 @@ export const importFileParser = async (event) => {
               Bucket: BUCKET,
               Key: objectKey
             }).promise();
+
 
             resolve({
               statusCode: 200,

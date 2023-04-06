@@ -2,9 +2,6 @@
 import AWS from 'aws-sdk'
 
 export const getProductsList = async (event) => {
-   // Logging
-  console.log('getProductsList called!');
-  console.log('event:', event);
 
   const dynamo = new AWS.DynamoDB.DocumentClient();
   const scan = async (TableName) => {
@@ -14,13 +11,13 @@ export const getProductsList = async (event) => {
 
   try {
     const getProducts = async () => {
-      const products = await (await scan(process.env.PRODUCTS_TABLE_NAME)).Items;
+      const products = await (await scan(process.env.PRODUCTS_TABLE_NAME || 'CloudX_Products')).Items;
 
       return products;
 
     }
     const getStocks = async () => {
-      const stocks = await (await scan(process.env.STOCKS_TABLE_NAME)).Items;
+      const stocks = await (await scan(process.env.STOCKS_TABLE_NAME || "CloudX_Stocks")).Items;
 
       return stocks;
 
@@ -50,7 +47,6 @@ export const getProductsList = async (event) => {
         'Access-Control-Allow-Credentials': true,
         'Content-Type': 'application/json'
       },
-      // body: JSON.stringify(productMock), //task-2
       body: JSON.stringify(await getFormattedProductDat()),
     };
 
